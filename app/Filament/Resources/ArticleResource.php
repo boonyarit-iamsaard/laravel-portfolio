@@ -49,7 +49,11 @@ class ArticleResource extends Resource
                     Forms\Components\Select::make('category_id')
                         ->columnSpanFull()
                         ->relationship('category', 'name'),
-                    Forms\Components\RichEditor::make('body')->columnSpanFull(),
+                    Forms\Components\RichEditor::make('body')
+                        ->columnSpanFull()
+                        ->extraInputAttributes([
+                            'style' => 'min-height: 16rem;',
+                        ]),
                     Forms\Components\Toggle::make('is_published')
                         ->label('Published')
                         ->inline(false),
