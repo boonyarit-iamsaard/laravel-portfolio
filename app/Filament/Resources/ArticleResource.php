@@ -19,20 +19,46 @@ class ArticleResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Card::make()
-                    ->schema([
-                        Forms\Components\TextInput::make('title')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\Select::make('category_id')
-                            ->relationship('category', 'name'),
-                        Forms\Components\RichEditor::make('body'),
-                        Forms\Components\Toggle::make('is_published'),
-                        Forms\Components\DateTimePicker::make('published_at'),
-                    ]),
-            ]);
+        return $form->schema([
+            Forms\Components\Card::make()->schema([
+                Forms\Components\FileUpload::make('cover_image')
+                    ->label('Cover Image')
+                    ->helperText(
+                        'The image must be a valid file format, with a minimum width of 900px, a minimum height of 256px, and a maximum file size of 1MB.'
+                    )
+                    ->image()
+                    ->maxSize(1024)
+                    ->imageResizeMode('cover')
+                    ->imageCropAspectRatio('16:9')
+                    ->imageResizeTargetWidth(900)
+                    ->imagePreviewHeight('256')
+                    ->imageResizeUpscale(false)
+                    ->disk('public')
+                    ->directory('articles/cover_images')
+                    ->visibility('public'),
+            ]),
+            Forms\Components\Card::make()->schema([
+                Forms\Components\Grid::make([
+                    'DEFAULT' => 1,
+                    'sm' => 2,
+                ])->schema([
+                    Forms\Components\TextInput::make('title')
+                        ->columnSpanFull()
+                        ->maxLength(255)
+                        ->required(),
+                    Forms\Components\Select::make('category_id')
+                        ->columnSpanFull()
+                        ->relationship('category', 'name'),
+                    Forms\Components\RichEditor::make('body')->columnSpanFull(),
+                    Forms\Components\Toggle::make('is_published')
+                        ->label('Published')
+                        ->inline(false),
+                    Forms\Components\DatePicker::make('published_at')->label(
+                        'Publish Date'
+                    ),
+                ]),
+            ]),
+        ]);
     }
 
     /**
@@ -44,18 +70,16 @@ class ArticleResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('title'),
                 Tables\Columns\TextColumn::make('author.name'),
-                Tables\Columns\TextColumn::make('category.name')
-                    ->placeholder('Uncategorized'),
+                Tables\Columns\TextColumn::make('category.name')->placeholder(
+                    'Uncategorized'
+                ),
                 Tables\Columns\IconColumn::make('is_published')
                     ->label('Published')
                     ->falseIcon('heroicon-o-ban')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('published_at')
-                    ->dateTime(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->since(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->since(),
+                Tables\Columns\TextColumn::make('published_at')->dateTime(),
+                Tables\Columns\TextColumn::make('created_at')->since(),
+                Tables\Columns\TextColumn::make('updated_at')->since(),
             ])
             ->filters([
                 //
@@ -64,16 +88,14 @@ class ArticleResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
-        ];
+                //
+            ];
     }
 
     public static function getPages(): array
