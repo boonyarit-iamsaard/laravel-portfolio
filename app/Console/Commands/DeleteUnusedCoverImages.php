@@ -25,16 +25,16 @@ class DeleteUnusedCoverImages extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         $articles = Article::pluck('cover_image')->toArray();
 
         collect(Storage::disk('public')->allFiles())
-            ->reject(fn(string $file) => $file === '.gitignore')
-            ->reject(fn(string $file) => in_array($file, $articles))
+            ->reject(fn (string $file) => $file === '.gitignore')
+            ->reject(fn (string $file) => in_array($file, $articles))
             ->each(function (string $file) {
                 Storage::disk('public')->delete($file);
-                $this->info("Deleted: {$file}");
+                $this->info("Deleted: $file");
             });
     }
 }
