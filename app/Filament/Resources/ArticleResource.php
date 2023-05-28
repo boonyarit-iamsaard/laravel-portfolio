@@ -21,8 +21,8 @@ class ArticleResource extends Resource
     {
         return $form->schema([
             Forms\Components\Card::make()->schema([
-                Forms\Components\FileUpload::make('cover_image')
-                    ->label('Cover Image')
+                Forms\Components\FileUpload::make('banner')
+                    ->label('Banner')
                     ->helperText(
                         'The image must be a valid file format, with a minimum width of 900px, a minimum height of 256px, and a maximum file size of 1MB.'
                     )
@@ -34,7 +34,7 @@ class ArticleResource extends Resource
                     ->imagePreviewHeight('256')
                     ->imageResizeUpscale(false)
                     ->disk('public')
-                    ->directory('articles/cover_images')
+                    ->directory('articles/banners')
                     ->visibility('public'),
             ]),
             Forms\Components\Card::make()->schema([

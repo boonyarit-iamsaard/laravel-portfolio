@@ -22,7 +22,7 @@ return new class extends Migration
                 ->nullable()
                 ->constrained()
                 ->onDelete('SET NULL');
-            $table->string('cover_image')->nullable();
+            $table->string('banner')->nullable();
             $table->string('title');
             $table->string('slug')->unique();
             $table->longText('body')->nullable();
