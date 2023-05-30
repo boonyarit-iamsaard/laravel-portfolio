@@ -2,7 +2,8 @@
 module.exports = {
     arrowParens: 'avoid',
     singleQuote: true,
-    plugins: ['@shufo/prettier-plugin-blade'],
+    plugins: ['prettier-plugin-blade', 'prettier-plugin-tailwindcss'],
+    pluginSearchDirs: false,
     overrides: [
         {
             files: ['*.blade.php'],
