@@ -21,20 +21,21 @@ class ArticleResource extends Resource
     {
         return $form->schema([
             Forms\Components\Card::make()->schema([
-                Forms\Components\FileUpload::make('banner')
-                    ->label('Banner')
+                // TODO: Improve image resizing and helper text.
+                Forms\Components\FileUpload::make('thumbnail')
+                    ->label('Thumbnail')
                     ->helperText(
-                        'The image must be a valid file format, with a minimum width of 900px, a minimum height of 256px, and a maximum file size of 1MB.'
+                        'The image must be a valid file format, with a minimum width of 900px, and a maximum file size of 1MB.'
                     )
                     ->image()
                     ->maxSize(1024)
-                    ->imageResizeMode('cover')
+                    ->imageResizeMode('contain')
                     ->imageCropAspectRatio('16:9')
-                    ->imageResizeTargetWidth(900)
-                    ->imagePreviewHeight('256')
+                    ->imageResizeTargetWidth('900')
+                    ->imageResizeTargetHeight('506')
                     ->imageResizeUpscale(false)
                     ->disk('public')
-                    ->directory('articles/banners')
+                    ->directory('articles/thumbnails')
                     ->visibility('public'),
             ]),
             Forms\Components\Card::make()->schema([
@@ -49,11 +50,6 @@ class ArticleResource extends Resource
                     Forms\Components\Select::make('category_id')
                         ->columnSpanFull()
                         ->relationship('category', 'name'),
-                    Forms\Components\RichEditor::make('body')
-                        ->columnSpanFull()
-                        ->extraInputAttributes([
-                            'style' => 'min-height: 16rem;',
-                        ]),
                     Forms\Components\Toggle::make('is_published')
                         ->label('Published')
                         ->inline(false),
@@ -61,6 +57,56 @@ class ArticleResource extends Resource
                         'Publish Date'
                     ),
                 ]),
+            ]),
+            Forms\Components\Card::make()->schema([
+                Forms\Components\Builder::make('content')
+                    ->blocks([
+                        Forms\Components\Builder\Block::make('heading')
+                            ->schema([
+                                Forms\Components\TextInput::make('content')
+                                    ->label('Heading')
+                                    ->required(),
+                                Forms\Components\Select::make('level')
+                                    ->options([
+                                        'h2' => 'Heading 2',
+                                        'h3' => 'Heading 3',
+                                        'h4' => 'Heading 4',
+                                        'h5' => 'Heading 5',
+                                        'h6' => 'Heading 6',
+                                    ])
+                                    ->required(),
+                            ]),
+                        Forms\Components\Builder\Block::make('paragraph')
+                            ->schema([
+                                Forms\Components\RichEditor::make('content')
+                                    ->label('Paragraph')
+                                    ->extraInputAttributes([
+                                        'style' => 'min-height: 16rem;',
+                                    ])
+                                    ->required(),
+                            ]),
+                        Forms\Components\Builder\Block::make('image')
+                            ->schema([
+                                // TODO: Improve image resizing.
+                                Forms\Components\FileUpload::make('content')
+                                    ->label('Image')
+                                    ->image()
+                                    ->maxSize(1024)
+                                    ->imageResizeMode('contain')
+                                    ->imageCropAspectRatio('16:9')
+                                    ->imageResizeTargetWidth('900')
+                                    ->imageResizeTargetHeight('506')
+                                    ->imageResizeUpscale(false)
+                                    ->disk('public')
+                                    ->directory('articles/images')
+                                    ->visibility('public')
+                                    ->required(),
+                                Forms\Components\TextInput::make('alt')
+                                    ->label('Alt Text')
+                                    ->required(),
+                            ]),
+                    ])
+                    ->collapsible(),
             ]),
         ]);
     }
@@ -74,9 +120,8 @@ class ArticleResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('title'),
                 Tables\Columns\TextColumn::make('author.name'),
-                Tables\Columns\TextColumn::make('category.name')->placeholder(
-                    'Uncategorized'
-                ),
+                Tables\Columns\TextColumn::make('category.name')
+                    ->placeholder('Uncategorized'),
                 Tables\Columns\IconColumn::make('is_published')
                     ->label('Published')
                     ->falseIcon('heroicon-o-ban')

@@ -20,13 +20,30 @@ class ArticleObserver
      */
     public function saved(Article $article): void
     {
-        if (
-            $article->isDirty('banner') &&
-            ! is_null($article->getOriginal('banner'))
-        ) {
+        $isThumbnailDirtyAndHasOriginal = $article->isDirty('thumbnail') &&
+            ! is_null($article->getOriginal('thumbnail'));
+
+        if ($isThumbnailDirtyAndHasOriginal) {
             Storage::disk('public')->delete(
-                $article->getOriginal('banner')
+                $article->getOriginal('thumbnail')
             );
+        }
+
+        $isContentDirtyAndHasOriginal = $article->isDirty('content') &&
+            ! is_null($article->getOriginal('content'));
+
+        if ($isContentDirtyAndHasOriginal) {
+            $originalContent = $article->getOriginal('content');
+            $newContent = $article->content;
+
+            $originalImageUrls = $this->getImageUrls($originalContent);
+            $newImageUrls = $this->getImageUrls($newContent);
+
+            $imageUrlsToDelete = array_diff($originalImageUrls, $newImageUrls);
+
+            foreach ($imageUrlsToDelete as $imageUrl) {
+                Storage::disk('public')->delete($imageUrl);
+            }
         }
     }
 
@@ -43,8 +60,17 @@ class ArticleObserver
      */
     public function deleted(Article $article): void
     {
-        if (! is_null($article->banner)) {
-            Storage::disk('public')->delete($article->banner);
+        $hasThumbnail = ! is_null($article->thumbnail);
+
+        if ($hasThumbnail) {
+            Storage::disk('public')->delete($article->thumbnail);
+        }
+
+        $content = $article->content;
+        $imageUrls = $this->getImageUrls($content);
+
+        foreach ($imageUrls as $imageUrl) {
+            Storage::disk('public')->delete($imageUrl);
         }
     }
 
@@ -62,5 +88,22 @@ class ArticleObserver
     public function forceDeleted(Article $article): void
     {
         //
+    }
+
+    // TODO: Make it reusable.
+    /**
+     * Extract the image URLs from the content array.
+     */
+    private function getImageUrls(array $content): array
+    {
+        $imageUrls = [];
+
+        foreach ($content as $item) {
+            if ($item['type'] === 'image' && isset($item['data']['content'])) {
+                $imageUrls[] = $item['data']['content'];
+            }
+        }
+
+        return $imageUrls;
     }
 }

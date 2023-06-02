@@ -10,12 +10,16 @@ class Article extends Model
     protected $fillable = [
         'author_id',
         'category_id',
-        'banner',
+        'thumbnail',
         'title',
         'slug',
-        'body',
+        'content',
         'is_published',
         'published_at',
+    ];
+
+    protected $casts = [
+        'content' => 'array',
     ];
 
     public function author(): BelongsTo

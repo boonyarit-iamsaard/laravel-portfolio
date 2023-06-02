@@ -22,10 +22,10 @@ return new class extends Migration
                 ->nullable()
                 ->constrained()
                 ->onDelete('SET NULL');
-            $table->string('banner')->nullable();
+            $table->string('thumbnail')->nullable();
             $table->string('title');
             $table->string('slug')->unique();
-            $table->longText('body')->nullable();
+            $table->json('content')->nullable();
             $table->boolean('is_published')->default(false);
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
